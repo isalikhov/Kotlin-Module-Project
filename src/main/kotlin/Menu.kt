@@ -44,12 +44,10 @@ class Menu<T>(private val data: T) {
                     0 -> newItem()
                     else -> {
                         if (data is Storage) {
-                            val menu2 = Menu(data.body[command - 1])
-                            menu2.show()
+                            Menu(data.body[command - 1]).show()
                         }
                         if (data is Archive) {
-                            val menu3 = Menu(data.body[command - 1])
-                            menu3.show()
+                            Menu(data.body[command - 1]).show()
                         }
                     }
                 }
