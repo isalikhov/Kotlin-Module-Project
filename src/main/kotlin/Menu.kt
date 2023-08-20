@@ -1,36 +1,35 @@
-class Menu<T>(private val data: T) {
+class Menu<T : Content>(private val data: T) {
     private var maxPunkt: Int = 0
+    private fun <T> MutableList<T>.printList() {
+        var i = 0
+        this.forEach {
+            println("${++i}. $it")
+        }
+    }
+
     fun show() {
         while (true) {
-            var i = 0
-
-            if (data is Storage) {
-                maxPunkt = data.body.size + 1
-                println("Список архивов:\n0. Создать архив")
-
-                data.body.forEach {
-                    i++
-                    println("$i. ${it.name}")
+            when (data) {
+                is Content.Storage -> {
+                    maxPunkt = data.body.size + 1
+                    println("Список архивов:\n0. Создать архив")
+                    data.body.printList()
                 }
-            }
-            if (data is Archive) {
-                maxPunkt = data.body.size + 1
-                println("Список заметок:\n0. Создать заметку")
-                data.body.forEach {
-                    i++
-                    println("$i. ${it.name}")
+                is Content.Archive -> {
+                    maxPunkt = data.body.size + 1
+                    println("Список заметок:\n0. Создать заметку")
+                    data.body.printList()
                 }
-            }
-            if (data is Note) {
-                maxPunkt = 0
-                println(data)
+                is Content.Note -> {
+                    maxPunkt = 0
+                    data.printNote()
+                }
             }
             println("$maxPunkt. Выход")
 
             println("\nВведите номер команды:")
-
             val stringCommand = readlnOrNull() ?: ""
-            var command: Int = -1
+            var command: Int
             try {
                 command = stringCommand.toInt()
             } catch (e: Exception) {
@@ -38,39 +37,31 @@ class Menu<T>(private val data: T) {
                 continue
             }
 
-            if (command in 0..maxPunkt)
-                when (command) {
-                    maxPunkt -> break
-                    0 -> newItem()
-                    else -> {
-                        if (data is Storage) {
-                            Menu(data.body[command - 1]).show()
-                        }
-                        if (data is Archive) {
-                            Menu(data.body[command - 1]).show()
-                        }
-                    }
-                }
-            else {
-                println("Ошибка: нет такого пункта в меню!")
+            when {
+                command == maxPunkt -> break
+                command == 0 -> newItem()
+                (command < 0) or (command > maxPunkt) -> println("Ошибка: нет такого пункта в меню!")
+                data is Content.Storage -> Menu(data.body[command - 1]).show()
+                data is Content.Archive -> Menu(data.body[command - 1]).show()
             }
         }
     }
 
     //Функция создания новой записи в списке
     private fun newItem() {
-        if (data is Storage) {
-            println("Введите название архива:")
-            data.body.add(Archive(readlnOrNull() ?: ""))
-            println("")
+        fun readlnNotNull(text: String): String {
+            var s: String
+            do {
+                println(text)
+                s = readlnOrNull() ?: ""
+                if (s == "") println("Ошибка: пустой ввод!")
+            } while (s == "")
+            println()
+            return s
         }
-        if (data is Archive) {
-            println("Введите название заметки:")
-            val sname = readlnOrNull() ?: ""
-            println("Введите текст заметки:")
-            val stext = readlnOrNull() ?: ""
-            data.body.add(Note(sname, stext))
-            println("")
+        when (data) {
+            is Content.Storage -> data.body.add(Content.Archive(readlnNotNull("Введите название архива:")))
+            is Content.Archive -> data.body.add(Content.Note(readlnNotNull("Введите название заметки:"), readlnNotNull("Введите текст заметки:")))
         }
     }
 }
