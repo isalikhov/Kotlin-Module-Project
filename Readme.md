@@ -1,1 +1,1 @@
-# Пустой репозиторий для работы с Kotlin кодом в Android Studio
+# Моя прога для работы с Kotlin кодом в Android Studio
